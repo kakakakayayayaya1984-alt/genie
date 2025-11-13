@@ -14,6 +14,12 @@ export const metadata = {
     default: "Room Mitra Dashboard",
   },
   description: "Room Mitra dashboard to manage guest requests",
+  manifest: "/manifest.json",
+  themeColor: "#1e40af",
+  icons: {
+    icon: "/images/logo/logo.svg",
+    apple: "/images/logo/logo.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
