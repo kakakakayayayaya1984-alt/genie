@@ -101,7 +101,7 @@ export default [
   // WEBSITE: Next.js client and config
   // ==================================
   {
-    files: ['website/**/*.{js,jsx}'],
+    files: ['website/**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -116,6 +116,7 @@ export default [
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
       '@next/next': next,
+      '@typescript-eslint': tseslint,
     },
     settings: { react: { version: 'detect' } },
     rules: {
@@ -135,6 +136,13 @@ export default [
 
       // Work around the plugin crash in your stack
       '@next/next/no-duplicate-head': 'off',
+
+      // Prefer TS-aware unused-vars
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 

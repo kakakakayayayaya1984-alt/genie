@@ -1,14 +1,46 @@
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 import { buildHotelEntityItem } from '#common/hotelEntity.helper.js';
-import { ENTITY_TABLE_NAME, GSI_ACTIVE_NAME } from '#Constants/DB.constants.js';
+import { ENTITY_TABLE_NAME } from '#Constants/DB.constants.js';
 
-export async function saveConversationEntities(conversation, messages) {
+export async function saveConversationEntities(conversation, messages, conversationState) {
   const TransactItems = [];
 
   // 1) Upsert the conversation atomically using Update (Update acts as upsert in DynamoDB)
   if (conversation) {
     const conversationItem = buildHotelEntityItem(conversation);
     const { pk, sk, ...attrs } = conversationItem;
+
+    // Build a dynamic SET expression for all attrs except pk/sk
+    const ExpressionAttributeNames = {};
+    const ExpressionAttributeValues = {};
+    const sets = [];
+
+    Object.entries(attrs).forEach(([key, value]) => {
+      const nameKey = `#${key}`;
+      const valueKey = `:${key}`;
+      ExpressionAttributeNames[nameKey] = key;
+      ExpressionAttributeValues[valueKey] = value;
+      sets.push(`${nameKey} = ${valueKey}`);
+    });
+
+    // Ensure updatedAt gets touched (optional)
+    ExpressionAttributeNames['#updatedAt'] = 'updatedAt';
+    ExpressionAttributeValues[':updatedAt'] = new Date().toISOString();
+    sets.push('#updatedAt = :updatedAt');
+
+    TransactItems.push({
+      Update: {
+        TableName: ENTITY_TABLE_NAME,
+        Key: { pk, sk },
+        UpdateExpression: `SET ${sets.join(', ')}`,
+        ExpressionAttributeNames,
+        ExpressionAttributeValues,
+      },
+    });
+  }
+
+  if (conversationState) {
+    const { pk, sk, updatedAt, ...attrs } = conversationState;
 
     // Build a dynamic SET expression for all attrs except pk/sk
     const ExpressionAttributeNames = {};
@@ -51,29 +83,4 @@ export async function saveConversationEntities(conversation, messages) {
   });
 
   return DDB.transactWrite({ TransactItems }).promise();
-}
-
-export async function getConversationById({ hotelId, conversationId }) {
-  const pk = `HOTEL#${hotelId}`;
-  const sk = `CONVERSATION#${conversationId}`;
-
-  const params = {
-    TableName: ENTITY_TABLE_NAME,
-    IndexName: GSI_ACTIVE_NAME,
-    KeyConditionExpression: '#pk = :pk and #sk = :sk',
-    ExpressionAttributeNames: {
-      '#pk': 'active_pk',
-      '#sk': 'active_sk',
-    },
-    ExpressionAttributeValues: {
-      ':pk': pk,
-      ':sk': sk,
-    },
-    Limit: 1,
-  };
-
-  const { Items } = await DDB.query(params).promise();
-  if (!Items || Items.length === 0) return null;
-
-  return Items[0];
 }

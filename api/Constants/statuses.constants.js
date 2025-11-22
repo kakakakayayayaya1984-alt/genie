@@ -7,14 +7,7 @@ export const RequestStatus = {
   CANCELLED: 'cancelled',
 };
 
-export const RequestStatuses = [
-  RequestStatus.NEW,
-  RequestStatus.UNACKNOWLEDGED,
-  RequestStatus.IN_PROGRESS,
-  RequestStatus.DELAYED,
-  RequestStatus.COMPLETED,
-  RequestStatus.CANCELLED,
-];
+export const RequestStatuses = Object.values(RequestStatus);
 
 export const ActiveRequestStatuses = [
   RequestStatus.NEW,
@@ -34,14 +27,7 @@ export const OrderStatus = {
   SCHEDULED: 'scheduled',
 };
 
-export const OrderStatuses = [
-  OrderStatus.PENDING,
-  OrderStatus.PREPARING,
-  OrderStatus.DELAYED,
-  OrderStatus.DELIVERED,
-  OrderStatus.CANCELLED,
-  OrderStatus.SCHEDULED,
-];
+export const OrderStatuses = Object.values(OrderStatus);
 
 export const ActiveOrderStatuses = [
   OrderStatus.PENDING,

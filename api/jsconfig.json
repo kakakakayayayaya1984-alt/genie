@@ -8,10 +8,11 @@
       "#repositories/*": ["./repositories/*"],
       "#clients/*": ["./clients/*"],
       "#Constants/*": ["./Constants/*"],
-      "#libs/*": ["libs/*"],
-      "#common/*": ["common/*"],
-      "#presenters/*": ["presenters/*"],
-      "#tasks/*": ["tasks/*"]
+      "#libs/*": ["./libs/*"],
+      "#common/*": ["./common/*"],
+      "#presenters/*": ["./presenters/*"],
+      "#tasks/*": ["./tasks/*"],
+      "#config/*": ["./config/*"]
     }
   }
 }

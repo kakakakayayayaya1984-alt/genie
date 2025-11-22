@@ -5,6 +5,7 @@
     "@next/eslint-plugin-next": "^14.2.5",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
+    "autoprefixer": "^10.4.22",
     "eslint": "^8.57.0",
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-react": "^7.37.2",
@@ -12,7 +13,9 @@
     "globals": "^15.11.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.9",
-    "prettier": "^3.3.3"
+    "postcss": "^8.5.6",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^4.1.17"
   },
   "lint-staged": {
     "api/**/*.{js,jsx,ts,tsx}": [

@@ -1,5 +1,5 @@
 import { Department } from '#Constants/department.constants.js';
-import { PRIORITY } from '#Constants/priority.constants.js';
+import { Priority } from '#Constants/priority.constants.js';
 import { requestResponse } from '#presenters/request.js';
 import { queryMenuByHotel } from '#repositories/Menu.repository.js';
 import { validateCart } from '#services/Cart.service.js';
@@ -37,7 +37,7 @@ router.post('/order', async (req, res) => {
       guestUserId,
 
       department: Department.ROOM_SERVICE,
-      priority: PRIORITY.HIGH,
+      priority: Priority.HIGH,
       cart,
     });
 

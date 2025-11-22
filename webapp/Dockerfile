@@ -10,9 +10,6 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json* ./
 RUN npm ci --include=dev
 
-# Public envs for Next to bake into the build
-ARG NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 
 # Build
 COPY . .

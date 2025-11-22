@@ -1,5 +1,5 @@
 import { buildHotelEntityItem } from '#common/hotelEntity.helper.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 import {
   ENTITY_TABLE_NAME,
   GSI_ACTIVE_NAME,

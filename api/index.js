@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import { getReqId, requestContext } from './middleware/requestContext.js';
 
 // Patch console methods to include request ID if available
@@ -17,6 +14,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import cron from 'node-cron';
+import { WebSocketServer } from 'ws';
+import http from 'http';
+import url from 'url';
+import jwt from 'jsonwebtoken';
 
 // import swaggerUi from 'swagger-ui-express';
 // import swaggerJsdoc from 'swagger-jsdoc';
@@ -26,7 +27,7 @@ import bookingRoutes from '#routes/webapp/Booking.controller.js';
 import staffRoutes from '#routes/webapp/Staff.controller.js';
 import loginRoutes from '#routes/webapp/Login.controller.js';
 import userRoutes from '#routes/webapp/User.controller.js';
-import landingPageRoutes from '#routes/webapp/leads.route.js';
+import websiteRoutes from '#routes/webapp/Website.route.js';
 import roomRoutes from '#routes/webapp/Room.controller.js';
 import requestRoutes from '#routes/webapp/Request.controller.js';
 import hotelRoutes from '#routes/webapp/Hotel.controller.js';
@@ -50,9 +51,18 @@ import adminAuthenticator from '#middleware/AdminAuthenticator.middleware.js';
 import adminHotelRoutes from '#routes/admin/Hotel.controller.js';
 import adminStaffRoutes from '#routes/admin/Staff.controller.js';
 
+// Socket controller
+import { connection } from '#routes/Socket.controller.js';
+
+// Cron jobs
 import { checkDelayedRequests } from '#tasks/checkDelayedRequests.task.js';
 
 const app = express();
+const server = http.createServer(app);
+
+// WebSocket server setup
+const wss = new WebSocketServer({ noServer: true });
+
 app.use(requestContext);
 
 app.use(
@@ -79,6 +89,8 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
+      'http://localhost:3002',
+      'https://roommitra.com',
       'https://app.roommitra.com',
       'https://app-stage.roommitra.com',
     ],
@@ -105,34 +117,13 @@ app.use('/android/conversations', androidAuthenticator, androidConversationRoute
 // routes which dont need auth
 app.use('/user', userRoutes);
 app.use('/login', loginRoutes);
-app.use('/leads', landingPageRoutes);
+app.use('/website', websiteRoutes);
 
 // -------------------------
 // Admin Routes
 // -------------------------
 app.use('/admin/hotels', adminAuthenticator, adminHotelRoutes);
 app.use('/admin/staff', adminAuthenticator, adminStaffRoutes);
-
-app.listen(PORT, () => console.log(`Server running on port: http://localhost:${PORT}`));
-
-// swagger setup
-// const swaggerOptions = {
-//   definition: {
-//     openapi: '3.0.0',
-//     info: {
-//       title: 'Room Mitra API',
-//       version: '1.0.0',
-//       description: 'API documentation for Room Mitra (Android + UI)',
-//     },
-//     servers: [
-//       { url: `Android`, description: 'Android APIs' },
-//       { url: `UI`, description: 'UI APIs' },
-//     ],
-//   },
-//   apis: ['./routes/**/*.js'], // Path to your route files
-// };
-// const swaggerSpec = swaggerJsdoc(swaggerOptions);
-// app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --- Health check endpoint ---
 app.get('/health', (req, res) => {
@@ -152,6 +143,43 @@ app.get('/android/health', (req, res) => {
   });
 });
 
+server.on('upgrade', function upgrade(request, socket, head) {
+  const { query, pathname } = url.parse(request.url, true);
+
+  const token = query.token;
+
+  if (!token) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  try {
+    request.user = jwt.verify(token, process.env.SECRET_KEY);
+  } catch (err) {
+    // Could be expired, malformed, etc.
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  // Check if the request is destined for the root WebSocket path
+  if (pathname === '/') {
+    // Use the handleUpgrade function to pass control to the ws server
+    wss.handleUpgrade(request, socket, head, function done(ws) {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    // If the path is wrong, close the socket and return a 404 (though the client often sees a connection failure first)
+    socket.destroy();
+  }
+});
+
+// --- WebSocket Handler ---
+wss.on('connection', connection);
+
 cron.schedule('*/2 * * * *', () => {
   checkDelayedRequests();
 });
+
+server.listen(PORT, () => console.log(`Server running on port: http://localhost:${PORT}`));

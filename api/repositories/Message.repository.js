@@ -1,33 +1,6 @@
 import { ENTITY_TABLE_NAME, GSI_ACTIVE_NAME } from '#Constants/DB.constants.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 
-export async function getMessages({ conversationId }) {
-  const params = {
-    TableName: ENTITY_TABLE_NAME,
-    IndexName: GSI_ACTIVE_NAME,
-    KeyConditionExpression: '#pk = :p',
-    ExpressionAttributeNames: { '#pk': 'active_pk' },
-    ExpressionAttributeValues: { ':p': `CONVERSATION#${conversationId}` },
-    ScanIndexForward: true,
-  };
-
-  const items = [];
-  let lastEvaluatedKey;
-
-  try {
-    do {
-      const res = await DDB.query(params).promise();
-      if (res.Items?.length) items.push(...res.Items);
-      lastEvaluatedKey = res.LastEvaluatedKey;
-      params.ExclusiveStartKey = lastEvaluatedKey;
-    } while (lastEvaluatedKey);
-
-    return items;
-  } catch (err) {
-    console.error('Failed to retrieve messages:', err);
-    throw new Error('Failed to retrieve messages');
-  }
-}
 /**
  * getMessagesByConversationIds
  * @param {string[]} conversationIds - array of ULIDs
@@ -37,7 +10,7 @@ export async function getMessages({ conversationId }) {
 export async function getMessagesByConversationIds(conversationIds = [], opts = {}) {
   if (!conversationIds.length) return new Map();
 
-  const { consistentRead = false, projection, concurrency = 8 } = opts;
+  const { projection, concurrency = 8 } = opts;
 
   // de-dupe while preserving order
   const seen = new Set();
@@ -56,7 +29,10 @@ export async function getMessagesByConversationIds(conversationIds = [], opts = 
   async function worker() {
     while (queue.length) {
       const id = queue.shift();
-      const items = await queryAllMessagesForConversation(id, { consistentRead, projection });
+      const items = await queryAllForConversation(id, {
+        projection,
+        messagesOnly: true,
+      });
       // sort by sk (MESSAGE#<ulid>) so it's chronological by ULID
       items.sort((a, b) => String(a.sk).localeCompare(String(b.sk)));
       results.set(id, items);
@@ -69,21 +45,32 @@ export async function getMessagesByConversationIds(conversationIds = [], opts = 
   return results;
 }
 
-async function queryAllMessagesForConversation(conversationId, { consistentRead, projection }) {
+export async function queryAllForConversation(conversationId, { projection, messagesOnly }) {
   const items = [];
   let ExclusiveStartKey;
+
+  const keyConditionExpressions = ['#pk = :pk'];
+  const expressionAttributeNames = {
+    '#pk': 'active_pk',
+  };
+
+  const expressionAttributeValues = {
+    ':pk': `CONVERSATION#${conversationId}`,
+  };
+
+  if (messagesOnly) {
+    keyConditionExpressions.push('begins_with(#sk, :sk)');
+    expressionAttributeNames['#sk'] = 'active_sk';
+    expressionAttributeValues[':sk'] = 'MESSAGE#';
+  }
 
   do {
     const params = {
       TableName: ENTITY_TABLE_NAME,
       IndexName: GSI_ACTIVE_NAME,
-      ConsistentRead: !!consistentRead,
-      KeyConditionExpression: '#pk = :pk AND begins_with(#sk, :skPrefix)',
-      ExpressionAttributeNames: { '#pk': 'active_pk', '#sk': 'active_sk' },
-      ExpressionAttributeValues: {
-        ':pk': `CONVERSATION#${conversationId}`,
-        ':skPrefix': 'MESSAGE#',
-      },
+      KeyConditionExpression: keyConditionExpressions.join(' AND '),
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
       ...(projection ? { ProjectionExpression: projection } : {}),
       ...(ExclusiveStartKey ? { ExclusiveStartKey } : {}),
     };

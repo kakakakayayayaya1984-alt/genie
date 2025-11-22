@@ -1,0 +1,3 @@
+export const OtpPurpose = {
+  VOICE_AGENT_TRIAL_REQUEST: 'VOICE_AGENT_TRIAL_REQUEST',
+};

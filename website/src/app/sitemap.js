@@ -1,6 +1,6 @@
 // app/sitemap.js
 
-import { getAllPostsMeta } from '@/lib/blog';
+import { getAllPostsMeta } from '@/src/lib/blog';
 
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://roommitra.com';

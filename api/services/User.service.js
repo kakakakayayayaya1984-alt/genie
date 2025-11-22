@@ -3,7 +3,7 @@ import { ulid } from 'ulid';
 import * as UserRepo from '#repositories/User.repository.js';
 import { ENTITY_TABLE_NAME } from '#Constants/DB.constants.js';
 import { toIsoString } from '#common/timestamp.helper.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 
 const SALT_ROUNDS = 12;
 

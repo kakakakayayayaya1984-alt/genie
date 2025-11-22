@@ -62,3 +62,7 @@ terraform.tfstate
 terraform.tfstate.backup
 .terraform/
 .terraform.lock.hcl
+
+
+# service account key jsons
+voice-agent-trial-service-account.json

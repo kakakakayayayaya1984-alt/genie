@@ -140,10 +140,11 @@ export function CancellationModal({ request, onClose, showModal }) {
                         },
                         { label: "Other reason", value: "other" },
                       ]}
-                      placeholder="Room Service"
+                      placeholder="Created by mistake"
                       handleChange={(e) =>
                         setCancellationReason(e.target.value)
                       }
+                      value={cancellationReason}
                       required
                     />
 

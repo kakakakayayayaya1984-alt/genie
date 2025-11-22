@@ -145,7 +145,7 @@ export default function Page() {
         ? filtered.map((r) => ({
             name: <User user={r} onlyName={true} />,
             contact: (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 items-start w-55">
                 <div className="flex items-center justify-start gap-1">
                   <EmailIcon className="h-5 w-5 text-gray-500" />
                   <span>{r.email}</span>

@@ -195,3 +195,29 @@ sudo du -sh /* > before_dirs.txt
 sudo du -sh /* > after_dirs.txt
 diff before_dirs.txt after_dirs.txt
 ```
+
+
+# Updating environment vars and secrets
+
+1. Get the secret from aws paramters
+```sh
+aws ssm get-parameter --name "/roommitra/api-stage/env" --with-decryption --query "Parameter.Value" --output text > pp.txt
+```
+2. Update the variables in `pp.txt`. It's a `.env` file so follow the rules for writing a `.env` file. Example:
+```sh
+ENV=stage
+
+MY_SECRET=verysecret
+
+SO_SECRET=alsosecret
+
+```
+3. Write the updated `pp.txt` file to `ssm` parameter
+```sh
+aws ssm put-parameter --name "/roommitra/api-stage/env" --type "SecureString" --value "$(cat pp.txt)" --overwrite
+```
+
+### Note:
+1. The parameter names available are `api`, `website`, `webapp` for production environments. `api-stage`, `webapp-stage` for stage environments.
+2. You have to redeploy the docker image using the github actions ci/cd for the updated ssm parameter file to get set as environment vars in your container.
+

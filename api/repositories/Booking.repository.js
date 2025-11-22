@@ -1,7 +1,7 @@
 import { ENTITY_TABLE_NAME, GSI_ACTIVE_NAME, GSI_ROOMTYPE_NAME } from '#Constants/DB.constants.js';
 import { buildHotelEntityItem } from '#common/hotelEntity.helper.js';
 import { toIsoString } from '#common/timestamp.helper.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 import { decodeToken, encodeToken } from './repository.helper.js';
 
 export async function existsOverlappingBooking({ roomId, checkInTime, checkOutTime }) {

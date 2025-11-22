@@ -9,7 +9,7 @@ export function summarizeRequests(requests) {
     `,
     summary: {
       headers: ['department', 'requestType', 'details', 'priority', 'cart'],
-      rows: requests.map((r) => [
+      rows: requests?.map((r) => [
         r.department,
         r.requestType,
         r.details,
@@ -21,7 +21,7 @@ export function summarizeRequests(requests) {
 }
 
 export function summarizeCart(cart) {
-  if (!cart) return "";
+  if (!cart) return '';
   const forTime = cart.scheduledAt ? `to be delivered at ${toIsoString(cart.scheduledAt)}` : '';
   const instructions = cart.instructions ? `Instructions: ${cart.instructions}` : '';
   const items = cart.items

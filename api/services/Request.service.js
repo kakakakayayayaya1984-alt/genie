@@ -10,10 +10,7 @@ import { ulid } from 'ulid';
 import { placeOrder } from './Order.service.js';
 import { updateOrderStatus } from '#repositories/Order.repository.js';
 import { orderResponse } from '#presenters/order.js';
-import { REQUEST_DEPARTMENT_TO_STAFF_DEPARTMENTS } from '#Constants/department.constants.js';
-import { getAvailableStaff, listStaffForHotel } from './Staff.service.js';
-import { RolePriority } from '#Constants/roles.js';
-import { DateTime } from 'luxon';
+import { getAvailableStaff } from './Staff.service.js';
 
 const minsToFulfillByDepartment = {
   house_keeping: () => {

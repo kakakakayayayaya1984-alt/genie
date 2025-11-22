@@ -1,129 +1,116 @@
+import { computeRelevanceScore } from '#libs/ranking.js';
 import { queryMenuByHotel } from '#repositories/Menu.repository.js';
 
-// type FetchArgs = {
-//   hotelId: string;
-//   sections?: string[];
-//   query?: string;
-//   topK?: number;
-//   withSectionsSummary?: boolean;
-// };
+export async function handleFetchMenuItems({ hotelId, args }) {
+  const {
+    searchText,
+    cuisines,
+    categories,
+    veganOnly,
+    vegOnly,
+    glutenFree,
+    excludeAllergens,
+    includeUnavailable,
+    maxItems = 50,
+  } = args;
 
-// Given: availableSectionNames from DB, and modelSections from tool args
-export function pickValidSections(availableSectionNames, modelSections) {
-  if (!modelSections?.length) return [];
-
-  // 1) Build normalization helpers
-  const norm = (s) => s.trim().toLowerCase();
-
-  // Optional: small alias map for common variants
-  const aliases = new Map([
-    ['soup', 'soups'],
-    ['starter', 'starters'], // if you have "Starters"
-    ['dessert', 'desserts'],
-    ['drink', 'beverages'], // if your section is "Beverages"
-  ]);
-
-  const availNorm = new Map(); // norm -> canonical
-  for (const sec of availableSectionNames) {
-    availNorm.set(norm(sec), sec);
-  }
-
-  const resolved = [];
-  for (const raw of modelSections) {
-    const n = norm(raw);
-    // exact normalized
-    if (availNorm.has(n)) {
-      resolved.push(availNorm.get(n));
-      continue;
-    }
-    // alias normalized
-    if (aliases.has(n)) {
-      const aliasNorm = aliases.get(n);
-      if (availNorm.has(aliasNorm)) {
-        resolved.push(availNorm.get(aliasNorm));
-      }
-    }
-    // otherwise: ignore silently; the model may ask for a non-existent section
-  }
-
-  // De-dup while preserving order
-  return [...new Set(resolved)];
-}
-
-export async function handleFetchMenu({ hotelId, args }) {
-  const { mode, sections } = args;
-  const topK = Math.min(Math.max(args.topK ?? 20, 1), 50);
-
-  const availableSections = await getAvailableSections({ hotelId, withSamples: true });
-  const availableSectionNames = availableSections.map((s) => s.name);
-  const menuVersion = await getMenuVersion({ hotelId });
-
-  function getSummary() {
-    // counts + tiny sample to keep tokens low
-    const perSectionCounts = new Map(availableSections.map((s) => [s.name, s.count]));
-    const samples = new Map(
-      availableSections.map((s) => [s.name, s.items.map((i) => i.name)].slice(0, 3))
-    );
-
-    return {
-      type: 'summary',
-      menuVersion: menuVersion,
-      available_sections: availableSectionNames,
-      counts: Object.fromEntries(perSectionCounts),
-      sample: Object.fromEntries(samples),
-    };
-  }
-
-  // 1) Sections-only response by default
-  if (mode === 'sections' && !sections?.length) {
-    return getSummary();
-  }
-
-  // 2) Items mode with sections or query
-  let items = [];
-  const menu = await queryMenuByHotel({});
-  if (sections?.length) {
-    // Normalize helper (optional)
-    const norm = (s) => (s ?? '').trim().toLowerCase();
-
-    const chosenNames = new Set(
-      (pickValidSections(availableSectionNames, sections) || []).map(norm)
-    );
-
-    items = (menu?.sections ?? [])
-      .filter((s) => chosenNames.has(norm(s?.name)) && Array.isArray(s?.items))
-      .flatMap((s) => {
-        const randomItems = sample(s.items, Math.min(topK, s.items.length));
-        return randomItems.map((i) => ({
-          itemId: i.itemId,
-          description: i.description,
-          name: i.name,
-          section: s.name,
-        }));
-      });
-  } else {
-    // Safety: if model asked mode=items without sections or query, do NOT send all items
-    // Fall back to sections summary
-    return getSummary();
-  }
-
-  return {
-    type: 'results',
-    menuVersion: menuVersion,
-    available_sections: availableSectionNames,
-    items: items,
-  };
-}
-
-export async function getAvailableSections({ hotelId, withSamples = false }) {
   const menu = await queryMenuByHotel({ hotelId });
-  return menu?.sections?.map((s) => ({
-    name: s.name,
-    description: s.description,
-    count: s.items.length,
-    available: true,
-    items: withSamples ? sample(s.items, 5) : [],
-  }));
+  if (!menu || !menu.sections || menu.sections.length === 0) {
+    return { items: [] };
+  }
+
+  // 1. Flatten sections + items into a list with section context
+  const flattened = [];
+  for (const section of menu.sections) {
+    for (const item of section.items || []) {
+      flattened.push({ item, section });
+    }
+  }
+
+  // 2. Apply basic filters (cuisines, categories, vegOnly, availability)
+  let filtered = flattened.filter(({ item }) => {
+    // vegOnly filter
+    if (veganOnly) {
+      return item.vegan;
+    }
+
+    if (vegOnly) {
+      return item.veg;
+    }
+
+    if (glutenFree) {
+      return item.glutenFree;
+    }
+
+    if (excludeAllergens && excludeAllergens.length > 0) {
+      const itemAllergens = (item.allergens || []).map((a) => a.toLowerCase());
+      const notWanted = excludeAllergens.map((a) => a.toLowerCase());
+      const hasOverlap = notWanted.some((a) => itemAllergens.includes(a));
+      if (hasOverlap) return false;
+    }
+
+    // availability filter
+    if (!includeUnavailable) {
+      if (item?.available === false) return false;
+    }
+
+    return true;
+  });
+
+  // 4. Apply fuzzy-ish search over item + section
+  const scored = [];
+
+  for (const entry of filtered) {
+    const { item, section } = entry;
+    let score = 0;
+
+    score += computeRelevanceScore(searchText, item.name);
+    score += computeRelevanceScore(searchText, item.description) * 0.8;
+
+    score += computeRelevanceScore(searchText, section.name) * 0.7;
+    score += computeRelevanceScore(searchText, section.description) * 0.5;
+
+    score += computeRelevanceScore(categories || [], item.name) * 0.9;
+    score += computeRelevanceScore(categories || [], item.categories || []) * 0.8;
+    score += computeRelevanceScore(categories || [], item.description) * 0.6;
+
+    score += computeRelevanceScore(categories || [], section.name) * 0.5;
+    score += computeRelevanceScore(categories || [], section.description) * 0.4;
+
+    score += computeRelevanceScore(cuisines || [], section.name) * 0.5;
+    score += computeRelevanceScore(cuisines || [], section.description) * 0.4;
+
+    if (score > 0) {
+      scored.push({ entry, score });
+    }
+  }
+
+  // If no matches from fuzzy search, fall back to filtered with no search
+  if (scored.length === 0) {
+    const limited = filtered.slice(0, maxItems);
+    return limited.map(toDTO);
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+
+  const limited = scored.slice(0, maxItems).map((s) => s.entry);
+  return limited.map(toDTO);
+}
+
+function toDTO({ item }) {
+  return {
+    itemId: item.itemId,
+    name: item.name,
+    unitPrice: item.unitPrice,
+    description: item.description,
+    category: item.category,
+    cuisines: item.cuisines,
+    veg: item.veg,
+    vegan: item.vegan,
+    glutenFree: item.glutenFree,
+    allergens: item.allergens,
+    available: item.available !== false,
+  };
 }
 
 export async function getItemsOnMenu({ hotelId }) {
@@ -143,8 +130,16 @@ export async function getItemsOnMenu({ hotelId }) {
     });
 }
 
-function getMenuVersion({ hotelId }) {
-  return 'v1';
+export async function handleFetchMenuSections({ hotelId, args }) {
+  const menu = await queryMenuByHotel({ hotelId });
+  return menu?.sections
+    ?.map((s) => ({
+      name: s.name,
+      description: s.description,
+      count: s.items.length,
+      items: sample(s.items, Math.min(s.items.length, args.itemsPerSection)),
+    }))
+    .sort(() => 0.5 - Math.random());
 }
 
 /**

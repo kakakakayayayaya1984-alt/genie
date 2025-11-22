@@ -88,7 +88,6 @@ jobs:
           provenance: false
           build-args: |
             NODE_ENV=production
-            NEXT_PUBLIC_API_BASE_URL=https://api-stage.roommitra.com
           tags: |
             public.ecr.aws/${{ env.PUBLIC_ECR_ALIAS }}/${{ env.PUBLIC_ECR_REPO }}:${{ env.IMAGE_TAG }}
           cache-from: |
@@ -120,7 +119,7 @@ jobs:
               "sudo -u appuser -H bash -lc \"docker pull ${IMAGE_URI}\"",
               "sudo -u appuser -H bash -lc \"docker stop webapp-stage || true\"",
               "sudo -u appuser -H bash -lc \"docker rm webapp-stage || true\"",
-              "sudo -u appuser -H bash -lc \"docker run -d --name webapp-stage -e PORT=3003 --env-file /opt/roommitra/webapp-stage/.env --restart unless-stopped -p 3003:3003 --log-driver=awslogs --log-opt awslogs-region=ap-south-1 --log-opt awslogs-group=/roommitra/containers --log-opt awslogs-stream=webapp-stage ${IMAGE_URI}\"",
+              "sudo -u appuser -H bash -lc \"docker run -d --name webapp-stage -e PORT=3003 --env-file /opt/roommitra/webapp-stage/.env --restart unless-stopped -p 127.0.0.1:3003:3003 --log-driver=awslogs --log-opt awslogs-region=ap-south-1 --log-opt awslogs-group=/roommitra/containers --log-opt awslogs-stream=webapp-stage ${IMAGE_URI}\"",
               "sudo -u appuser -H bash -lc \"docker container prune -f\"",
               "sudo -u appuser -H bash -lc \"docker system prune -af --volumes\"",
               "sudo -u appuser -H bash -lc \"docker builder prune -af\""

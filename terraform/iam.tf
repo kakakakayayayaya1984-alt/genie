@@ -83,3 +83,34 @@ resource "aws_iam_role_policy_attachment" "attach_s3_upload" {
   role       = aws_iam_role.ssm_role.name
   policy_arn = aws_iam_policy.s3_upload_policy.arn
 }
+
+###############################################
+# IAM Policy that allows sending emails via SES
+###############################################
+resource "aws_iam_policy" "ec2_ses_policy" {
+  name        = "ec2-ses-send-email-policy"
+  description = "Allow EC2 instances to send emails using SES"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+###############################################
+# Attach policy to role
+###############################################
+
+resource "aws_iam_role_policy_attachment" "ec2_ses_attach" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = aws_iam_policy.ec2_ses_policy.arn
+}

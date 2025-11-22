@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
       guestUserId,
       conversationId,
       userContent: message,
+      isProspect: false,
     };
 
     const result = await conversationService.handleConversation(conversationData);

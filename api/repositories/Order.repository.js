@@ -1,4 +1,4 @@
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 import { buildHotelEntityItem } from '#common/hotelEntity.helper.js';
 import {
   ENTITY_TABLE_NAME,

@@ -1,9 +1,10 @@
 // app/blog/page.jsx
 import Link from 'next/link';
 import Image from 'next/image';
-import { getAllPostsMeta } from '@/lib/blog';
-import Footer from '@/components/Footer';
-import { absoluteUrl } from '@/lib/urls';
+import { getAllPostsMeta } from '@/src/lib/blog';
+import { absoluteUrl } from '@/src/lib/urls';
+import LayoutEffect from '@/src/components/LayoutEffect';
+import GradientWrapper from '@/src/components/GradientWrapper';
 
 export const metadata = {
   title: 'Blog',
@@ -68,59 +69,73 @@ export default async function BlogIndexPage() {
   };
 
   return (
-    <>
-      <main className="mx-auto max-w-5xl px-4 py-10 mt-10">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
-        />
-        <h1 className="text-3xl font-bold mb-6 text-center">Hospitality Reimagined</h1>
-        <p className="text-center text-gray-600 mb-12">
-          How technology and design are shaping the modern guest experience.
-        </p>
+    <div className="custom-screen pt-12 pb-8">
+      <LayoutEffect
+        className="duration-1000 delay-300"
+        isInviewState={{
+          trueState: 'opacity-100',
+          falseState: 'opacity-0',
+        }}
+      >
+        <div>
+          <GradientWrapper
+            className="mt-16 sm:mt-28"
+            wrapperclassname="max-w-3xl h-[250px] top-12 inset-0 sm:h-[300px] lg:h-[300px]"
+          >
+            <div className="mx-auto max-w-5xl px-4 text-white">
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+              />
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+              />
+              <h1 className="text-4xl font-bold mb-6 text-center">Hospitality Reimagined</h1>
+              <p className="text-center text-gray-300 mb-12">
+                How technology and design are shaping the modern guest experience.
+              </p>
 
-        {posts.length === 0 && <p className="text-gray-500">No posts yet.</p>}
+              {posts.length === 0 && <p className="text-gray-500">No posts yet.</p>}
 
-        <ul className="grid gap-8 sm:grid-cols-3">
-          {posts.map((post) => (
-            <li key={post.slug} className="border border-gray-400 rounded-xl overflow-hidden">
-              {post.hero && (
-                <Link href={`/blog/${post.slug}`}>
-                  <Image
-                    src={post.hero}
-                    alt={post.title}
-                    width={1200}
-                    height={630}
-                    className="w-full h-56 object-cover"
-                    priority={false}
-                  />
-                </Link>
-              )}
+              <ul className="grid gap-8 sm:grid-cols-3">
+                {posts.map((post) => (
+                  <li key={post.slug} className="border border-gray-200 rounded-xl overflow-hidden">
+                    {post.hero && (
+                      <Link href={`/blog/${post.slug}`}>
+                        <Image
+                          src={post.hero}
+                          alt={post.title}
+                          width={1200}
+                          height={630}
+                          className="w-full h-56 object-cover"
+                          priority={false}
+                        />
+                      </Link>
+                    )}
 
-              <div className="p-5">
-                <h2 className="text-xl font-semibold">
-                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  By {post.author} on {new Date(post.date).toLocaleDateString()}
-                </p>
-                {post.description && <p className="text-gray-700 mt-3">{post.description}</p>}
-                <Link
-                  className="inline-block mt-4 text-blue-600 hover:underline"
-                  href={`/blog/${post.slug}`}
-                >
-                  Read more →
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </main>
-      <Footer />
-    </>
+                    <div className="p-5">
+                      <h2 className="text-xl font-semibold">
+                        <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                      </h2>
+                      <p className="text-sm text-gray-400 mt-1">
+                        By {post.author} on {new Date(post.date).toLocaleDateString()}
+                      </p>
+                      {post.description && <p className="text-gray-200 mt-3">{post.description}</p>}
+                      <Link
+                        className="inline-block mt-4 text-blue-600 hover:underline"
+                        href={`/blog/${post.slug}`}
+                      >
+                        Read more →
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </GradientWrapper>
+        </div>
+      </LayoutEffect>
+    </div>
   );
 }

@@ -15,6 +15,7 @@ const PAGE_LIMIT = 500;
  *      set status to DELAYED via updateRequestStatusWithLog.
  */
 export async function checkDelayedRequests() {
+  console.log('[checkDelayedRequests] Starting check for delayed requests');
   const hotels = await listHotels({});
 
   if (!hotels || hotels.count === 0) {

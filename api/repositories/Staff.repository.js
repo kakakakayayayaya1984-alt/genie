@@ -1,6 +1,6 @@
 import { ENTITY_TABLE_NAME, GSI_HOTELTYPE_NAME } from '#Constants/DB.constants.js';
 import { toIsoString } from '#common/timestamp.helper.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 import { HotelRoles } from '#Constants/roles.js';
 
 export async function addStaff({

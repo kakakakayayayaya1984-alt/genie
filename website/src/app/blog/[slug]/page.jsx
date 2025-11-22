@@ -1,10 +1,10 @@
-// app/blog/[slug]/page.jsx
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { getAllPostSlugs, getPostBySlug } from '@/lib/blog';
-import RequestDemoForm from '@/components/RequestDemoForm';
-import Footer from '@/components/Footer';
-import { absoluteUrl } from '@/lib/urls';
+import { getAllPostSlugs, getPostBySlug } from '@/src/lib/blog';
+import ContactUsForm from '@/src/components/ContactUsForm';
+import { absoluteUrl } from '@/src/lib/urls';
+import LayoutEffect from '@/src/components/LayoutEffect';
+import GradientWrapper from '@/src/components/GradientWrapper';
 
 export async function generateStaticParams() {
   const slugs = await getAllPostSlugs();
@@ -87,47 +87,60 @@ export default async function BlogPostPage({ params }) {
   };
 
   return (
-    <>
-      <main className="mx-auto max-w-3xl px-4 py-10 mt-10">
-        {/* JSON-LD script */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <article>
-          <header className="mb-6">
-            <h1 className="text-3xl font-bold">{post.title}</h1>
-            <p className="text-sm text-gray-600 mt-2">
-              By {post.author} on {new Date(post.date).toLocaleDateString()}
-            </p>
-          </header>
-
-          {post.hero && (
-            <div className="mb-8">
-              <Image
-                src={post.hero}
-                alt={post.title}
-                width={1200}
-                height={630}
-                className="w-full h-auto rounded-xl"
-                priority
+    <div className="custom-screen pt-12 pb-8">
+      <LayoutEffect
+        className="duration-1000 delay-300"
+        isInviewState={{
+          trueState: 'opacity-100',
+          falseState: 'opacity-0',
+        }}
+      >
+        <div>
+          <GradientWrapper
+            className="mt-16 sm:mt-28"
+            wrapperclassname="max-w-3xl h-[250px] top-12 inset-0 sm:h-[300px] lg:h-[300px]"
+          >
+            <div className="mx-auto max-w-3xl px-4 text-white">
+              {/* JSON-LD script */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
               />
-            </div>
-          )}
+              <article>
+                <header className="mb-6">
+                  <h1 className="text-3xl font-bold">{post.title}</h1>
+                  <p className="text-sm text-gray-400 mt-2">
+                    By {post.author} on {new Date(post.date).toLocaleDateString()}
+                  </p>
+                </header>
 
-          <div
-            className="prose prose-lg prose-slate max-w-none
+                {post.hero && (
+                  <div className="mb-8">
+                    <Image
+                      src={post.hero}
+                      alt={post.title}
+                      width={1200}
+                      height={630}
+                      className="w-full h-auto rounded-xl"
+                      priority
+                    />
+                  </div>
+                )}
+
+                <div
+                  className="prose-p:text-white prose-strong:text-white prose-a:text-indigo-400 prose-h2:text-white prose prose-lg prose-slate max-w-none
              prose-ol:list-decimal prose-li:my-2 prose-li:leading-relaxed
              marker:font-semibold"
-            dangerouslySetInnerHTML={{ __html: post.html }}
-          />
-        </article>
-      </main>
-      <div className="mt-10">
-        <hr className="border-gray-300 max-w-3xl mx-auto" />
-        <RequestDemoForm />
-      </div>
-      <Footer />
-    </>
+                  dangerouslySetInnerHTML={{ __html: post.html }}
+                />
+              </article>
+            </div>
+
+            <hr className="border-gray-300 max-w-3xl mx-auto my-20" />
+            <ContactUsForm />
+          </GradientWrapper>
+        </div>
+      </LayoutEffect>
+    </div>
   );
 }

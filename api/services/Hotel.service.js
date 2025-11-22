@@ -13,7 +13,7 @@ import { hotelResponse } from '#presenters/hotel.js';
 import { queryRequestsByStatusType } from '#repositories/Request.repository.js';
 import { ENTITY_TABLE_NAME } from '#Constants/DB.constants.js';
 import { toIsoString } from '#common/timestamp.helper.js';
-import DDB from '#clients/DynamoDb.client.js';
+import { DDB } from '#clients/DynamoDb.client.js';
 
 const ALLOWED_UPDATE_FIELDS = ['name', 'address', 'contactEmail', 'contactPhone'];
 

@@ -10,14 +10,26 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@heroicons/react": "^2.2.0",
+    "@next/font": "13.1.6",
+    "@ricky0123/vad-web": "^0.0.29",
     "@tailwindcss/typography": "^0.5.19",
+    "clsx": "^2.1.1",
+    "eslint": "8.33.0",
+    "eslint-config-next": "13.1.6",
+    "framer-motion": "^9.0.3",
     "gray-matter": "^4.0.3",
     "marked": "^16.4.0",
-    "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "next": "^16.0.3",
+    "onnxruntime-web": "^1.23.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/eslint-parser": "^7.28.5",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.13",
     "autoprefixer": "^10.4.21",

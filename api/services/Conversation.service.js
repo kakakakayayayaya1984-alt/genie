@@ -2,6 +2,7 @@ import * as messageRepo from '#repositories/Message.repository.js';
 import * as conversationRepo from '#repositories/Conversation.repository.js';
 import * as chatGPTService from '#services/ChatGPT/ChatGPT.service.js';
 import { ulid } from 'ulid';
+import { toIsoString } from '#common/timestamp.helper.js';
 
 function newMessage({ role, content, conversationId, ...props }) {
   return {
@@ -22,13 +23,20 @@ export async function handleConversation({
   guestUserId,
   conversationId,
   userContent,
+  isProspect,
 }) {
   let conversation = null;
+  let conversationState = null;
   let messagesInConversation = [];
 
   if (conversationId) {
     // For existing conversations, retrieve the past messages
-    const messages = await messageRepo.getMessages({ conversationId });
+    const all = await messageRepo.queryAllForConversation(conversationId, {
+      consistentRead: true,
+    });
+
+    const messages = all.filter((i) => i.sk !== 'STATE');
+    conversationState = all.filter((i) => i.sk === 'STATE')?.[0];
     messagesInConversation = messages.map((m) => ({ role: m.role, content: m.content }));
   } else {
     // Create a new conversation
@@ -42,6 +50,26 @@ export async function handleConversation({
       guestUserId,
       deviceId: deviceId,
       channel: 'android',
+      isProspect,
+    };
+  }
+
+  if (!conversationState) {
+    conversationState = {
+      pk: `CONVERSATION#${conversationId}`,
+      sk: 'STATE',
+      active_pk: `CONVERSATION#${conversationId}`,
+      active_sk: 'STATE',
+      entityType: 'CONVERSATION_STATE',
+      conversationId,
+      createdAt: toIsoString(),
+      vegOnly: false,
+      veganOnly: false,
+      glutenFree: false,
+      excludeAllergens: [],
+      hotel_requests: [],
+      order_requests: [],
+      menu_items: [],
     };
   }
 
@@ -56,21 +84,36 @@ export async function handleConversation({
     bookingId,
     conversationId,
     guestUserId,
+    conversationState,
+    isProspect,
   });
+
+  const {
+    reply,
+    isUserResponseNeeded,
+    canEndCall,
+    agents,
+    conversationState: updatedConversationState,
+  } = chatGPTResponse;
 
   // All new messages that have to be saved
   const newMessages = [
     newUserMessage,
-    newMessage({ role: 'assistant', content: chatGPTResponse.reply, conversationId }),
+    newMessage({ role: 'assistant', content: reply, conversationId }),
   ];
   // Now we save everything in the db
-  await conversationRepo.saveConversationEntities(conversation, newMessages);
+  await conversationRepo.saveConversationEntities(
+    conversation,
+    newMessages,
+    updatedConversationState
+  );
 
   const response = {
     conversationId,
-    message: chatGPTResponse.reply,
-    isConversationOpen: chatGPTResponse.isUserResponseNeeded,
-    agents: chatGPTResponse.agents,
+    message: reply,
+    isConversationOpen: isUserResponseNeeded,
+    canEndCall,
+    agents,
     // requests: savedRequests.map(requestResponse),
   };
 

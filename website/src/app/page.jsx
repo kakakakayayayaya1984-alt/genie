@@ -1,138 +1,21 @@
-import Link from 'next/link';
-import RequestDemoForm from '@/components/RequestDemoForm';
-import Footer from '@/components/Footer';
+import FrontDesk from '@/src/components/ui/FrontDesk';
+import Features from '@/src/components/ui/Features';
+import Hero from '@/src/components/ui/Hero';
+import Pricing from '@/src/components/ui/Pricing';
+import UseCases from '@/src/components/ui/UseCases';
+import BookADemo from '@/src/components/ui/BookADemo/bookADemo';
+import CostSavingsCalculatorSection from '../components/ui/CostSavingsCalculator/section';
 
-export default function Home() {
+export default function Page() {
   return (
     <>
-      <main>
-        {/* Hero */}
-        <section className="header text-center py-20 px-5 bg-indigo-50">
-          <h1 className="text-4xl md:text-4xl font-bold pt-20">
-            In-room Voice Assistant for Hotel Rooms
-          </h1>
-          <p className="mt-4 text-lg">
-            Elevate guest experience and streamline operations with Room Mitra
-          </p>
-          <Link
-            href="/#request-a-demo"
-            className="cta-btn mt-6 mb-6 inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg"
-          >
-            Request a Demo
-          </Link>
-        </section>
-
-        {/* Benefits for Hotels */}
-        <section id="benefits" className="py-16 max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center">Benefits for Hotels</h2>
-          <div className="grid md:grid-cols-3 gap-8 mt-10">
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🛎️</p>
-              <h3 className="font-semibold text-xl p-2">Guest Convenience</h3>
-              <p className="mt-2 text-gray-600">
-                24/7 voice & text based instant assistance and multi-language support to wow every
-                guest.
-              </p>
-            </div>
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🌟</p>
-              <h3 className="font-semibold text-xl p-2">Guest Delight</h3>
-              <p className="mt-2 text-gray-600">
-                Music, News, Weather, Games and much much more to turn rooms into entertainment
-                centers.
-              </p>
-            </div>
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">⚡</p>
-              <h3 className="font-semibold text-xl p-2">Operational Efficiency</h3>
-              <p className="mt-2 text-gray-600">
-                Automate routine queries and requests so your staff can focus on what matters –
-                hospitality.
-              </p>
-            </div>
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">💹</p>
-              <h3 className="font-semibold text-xl p-2">Revenue Growth</h3>
-              <p className="mt-2 text-gray-600">
-                Upsell hotel services, promote offers, and capture more bookings through seamless
-                guest engagement.
-              </p>
-            </div>
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🎯</p>
-              <h3 className="font-semibold text-xl p-2">Deep Personalisation</h3>
-              <p className="mt-2 text-gray-600">
-                Tailor guest experiences with personalized recommendations, preferences, and
-                services to create unforgettable stays.
-              </p>
-            </div>
-            <div className="p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">📊</p>
-              <h3 className="font-semibold text-xl">Dashboard and Reports</h3>
-              <p className="mt-2 text-gray-600">
-                Gain actionable insights with real-time analytics and detailed reports to make
-                data-driven decisions for your hotel.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Features */}
-        <section id="features" className="py-16 max-w-6xl mx-auto px-12 features-section">
-          <h2 className="text-3xl font-bold text-center">Features</h2>
-          <div className="grid md:grid-cols-2 gap-8 mt-10">
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🗣️</p>
-              <h3 className="font-semibold text-xl">Voice Ordering</h3>
-              <p className="mt-2">Guests can order food or request services using voice.</p>
-            </div>
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">💬</p>
-              <h3 className="font-semibold text-xl">WhatsApp Chatbot</h3>
-              <p className="mt-2">
-                24/7 chat support for guests – book amenities, ask queries, and get instant
-                responses on WhatsApp.
-              </p>
-            </div>
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🕐</p>
-              <h3 className="font-semibold text-xl">24x7 Support</h3>
-              <p className="mt-2">
-                Never miss a guest request. Our AI handles routine support so you always deliver
-                5-star service.
-              </p>
-            </div>
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">📱</p>
-              <h3 className="font-semibold text-xl">Digital Check-In and Check-Out</h3>
-              <p className="mt-2">
-                Simplify the guest experience with seamless digital check-in and check-out, reducing
-                wait times and enhancing convenience.
-              </p>
-            </div>
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">💡</p>
-              <h3 className="font-semibold text-xl">Voice-Controlled Electronics</h3>
-              <p className="mt-2">
-                Guests can control room electronics like lights, curtains, and thermostats using
-                simple voice commands for a smarter stay.
-              </p>
-            </div>
-            <div className="feature-item p-6 bg-white shadow rounded-lg text-center">
-              <p className="text-2xl p-2">🎺</p>
-              <h3 className="font-semibold text-xl">Entertainment Hub</h3>
-              <p className="mt-2">
-                Guests can play music, check the weather, and plan their day – all hands-free using
-                voice commands for a personalized experience.
-              </p>
-            </div>
-          </div>
-        </section>
-        {/* Request a Demo */}
-        <RequestDemoForm />
-      </main>
-
-      <Footer />
+      <Hero />
+      <UseCases />
+      <FrontDesk />
+      <CostSavingsCalculatorSection />
+      <Features />
+      <Pricing />
+      <BookADemo />
     </>
   );
 }

@@ -9,13 +9,7 @@ export const HotelRole = {
   TRAINEE: 'hotel_trainee',
 };
 
-export const HotelRoles = [
-  HotelRole.ADMIN,
-  HotelRole.MANAGER,
-  HotelRole.SUPERVISOR,
-  HotelRole.ASSOCIATE,
-  HotelRole.TRAINEE,
-];
+export const HotelRoles = Object.values(HotelRole);
 
 export const RolePriority = {
   [HotelRole.ADMIN]: 5,
